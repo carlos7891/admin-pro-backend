@@ -19,6 +19,7 @@ router.post( '/',
 
 router.put( '/:id',
     [
+        jwtValidation,
         check('name', 'El nombre es obligatorio').not().isEmpty(),
         check('email', 'Debe enviarse un email').isEmail(),
         check('role', 'El role es obligatorio').not().isEmpty(),
@@ -27,7 +28,7 @@ router.put( '/:id',
     updateUser
 );
 
-router.delete( '/:id', deleteUser )
+router.delete( '/:id', jwtValidation, deleteUser )
 
 
 
