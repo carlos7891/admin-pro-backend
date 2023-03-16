@@ -1,4 +1,7 @@
 const User = require('../models/user');
+const { response } = require('express');
+const bcrypt = require('bcrypt');
+const { generateJWT } = require('../helpers/jwt');
 
 const getUsers = async(req, res) => {
     const users = await User.find({}, 'nombre email role google');
@@ -9,21 +12,115 @@ const getUsers = async(req, res) => {
     })
 }
 
-const createUser = async(req, res) => {
-    const {name, password, email} = req.body;
-
-    const newUser = new User(req.body);
+const createUser = async(req, res = response) => {
+    const {password, email} = req.body;
 
     try {
+
+        const repeatedEmail = await User.findOne({ email });
+
+        if(repeatedEmail) {
+            return res.status(400).json({
+                ok:false,
+                msg: 'El correo ya está registrado'
+            })
+        }
+
+        const newUser = new User(req.body);
+
+        //encrypt password
+        const salt = bcrypt.genSaltSync(5);
+        newUser.password = bcrypt.hashSync(password, salt);
+
         await newUser.save();
+        
+        //Generar token
+        const token = await generateJWT(newUser.id);
+
         res.json({
             ok:true,
             msg: 'User Created',
-            newUser
+            newUser,
+            token
         })
     } catch (error) {
         console.log(error)
-        throw new Error('Error creando usuario')
+        res.status(500).json({
+            ok:false,
+            msg: 'Error inesperado... revisar logs'
+        })
+    }
+}
+
+const updateUser = async(req, res = response) => {
+    
+    const uid = req.params.id;
+
+    try {
+        const userDb = await User.findById(uid);
+        
+        if(!userDb){
+            return res.status(404).json({
+                ok:false,
+                msg:'No existe el usuario con ese id'
+            })
+        }
+
+        //TODO: Validar token y comprobar usuario
+
+        //Update
+        const { password, google, email, ...fields } = req.body;
+
+        if(userDb.email !== email) {
+            const existingEmail = await User.findOne({email});
+            if(existingEmail){
+                return res.status(400).json({
+                    ok:false,
+                    msg: 'Ya existe una cuenta con este email'
+                });
+            }
+        }
+        fields.email = email;
+        const userUpdated = await User.findByIdAndUpdate( uid, fields, {new:true});
+
+        res.json({
+            ok:true,
+            msg: 'User updated',
+            userUpdated
+        })
+        
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            ok:false,
+            msg:'Error Inesperado'
+        })
+    }
+}
+
+const deleteUser = async(req, res = response) => {
+    const uid = req.params.id;
+    try {
+        const userDb = await User.findById(uid);
+        if(!userDb) {
+            return res.status(404).json({
+                ok:false,
+                msg:'No existe el usuario indicado'
+            })
+        }
+        await User.findByIdAndDelete(uid);
+
+        res.json({
+            ok:true,
+            msg: 'User Deleted',
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            ok:false,
+            msg:'Error Inesperado'
+        })
     }
 
 }
@@ -32,5 +129,7 @@ const createUser = async(req, res) => {
 
 module.exports = {
     getUsers,
-    createUser
+    createUser,
+    updateUser,
+    deleteUser
 }
