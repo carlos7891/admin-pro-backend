@@ -19,7 +19,8 @@ dbConnection();
 //rutas
 app.use('/api/users', (require('./routes/users')));
 app.use('/api/login', (require('./routes/auth')));
-
+app.use('/api/hospitals', (require('./routes/hospital')));
+app.use('/api/doctors', (require('./routes/doctors')));
 
 
 app.listen( process.env.PORT, () => {
