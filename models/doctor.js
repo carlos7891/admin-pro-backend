@@ -2,16 +2,19 @@ const { Schema, model } = require('mongoose');
 
 const DoctorSchema = Schema({
     name:{
-        require:true
+        type:String,
+        required:true
     },
     img:{
         type:String,
     },
     user:{
+        required:true,
         type:Schema.Types.ObjectId,
         ref:'User'
     },
     hospital:{
+        required:true,
         type:Schema.Types.ObjectId,
         ref:'Hospital'
     }
