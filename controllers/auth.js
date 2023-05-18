@@ -75,6 +75,7 @@ const googleSignIn = async(req, res = response) =>{
 
         res.status(200).json({
             ok:true,
+            msg:'Logeado con exito',
             email, name, picture, token
         })
 
