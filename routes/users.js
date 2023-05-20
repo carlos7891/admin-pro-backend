@@ -22,7 +22,6 @@ router.put( '/:id',
         jwtValidation,
         check('name', 'El nombre es obligatorio').not().isEmpty(),
         check('email', 'Debe enviarse un email').isEmail(),
-        check('role', 'El role es obligatorio').not().isEmpty(),
         fieldValidation
     ],
     updateUser
