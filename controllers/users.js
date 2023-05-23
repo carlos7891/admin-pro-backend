@@ -89,7 +89,15 @@ const updateUser = async(req, res = response) => {
                 });
             }
         }
-        fields.email = email;
+        if(!userDb.google){
+            fields.email = email;
+            //encrypt password
+            if(password){
+                const salt = bcrypt.genSaltSync(5);
+                fields.password = bcrypt.hashSync(password, salt);
+            }
+        }
+        
         const userUpdated = await User.findByIdAndUpdate( uid, fields, {new:true});
 
         res.json({
