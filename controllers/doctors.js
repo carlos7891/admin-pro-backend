@@ -3,11 +3,19 @@ const Doctor = require('../models/doctor');
 
 const getDoctors = async(req, res = response ) => {
     try {
-        const doctors = await Doctor.find().populate('user','name').populate('hospital','name');
+        const from = Number(req.query.from) || 0;
+        const [doctors, totalDoctors] = await Promise.all([
+            Doctor.find().populate('user','name').populate('hospital','name')
+                .skip(from)
+                .limit(5),
+
+            Doctor.count()
+        ])
         res.json({
             ok:true,
             msg:'ok',
-            doctors:doctors
+            doctors:doctors,
+            total: totalDoctors
         })
     } catch (error) {
         console.log(error)
@@ -30,7 +38,7 @@ const createDoctor = async(req, res = response ) => {
 
         res.json({
             ok:true,
-            msg:'Doctor Creado',
+            msg:'Doctor Created',
             doctor:doctorDb
         })
     } catch (error) {
@@ -95,9 +103,35 @@ const deleteDoctor = async(req, res = response ) => {
     }
 }
 
+const getDoctorById = async(req, res = response ) => {
+    const uid = req.params.id;
+    try {
+        const doctorDb = await Doctor.findById(uid);
+        if(!doctorDb) {
+            return res.status(404).json({
+                ok:false,
+                msg:'No existe el medico indicado'
+            })
+        }
+        res.json({
+            ok: true,
+            msg: 'Doctor',
+            doctor: doctorDb
+        })
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            ok:false,
+            msg:'No existe el medico indicado'
+        })
+    }
+}
+
 module.exports = {
     getDoctors,
     createDoctor,
     updateDoctor,
-    deleteDoctor
+    deleteDoctor,
+    getDoctorById
 }

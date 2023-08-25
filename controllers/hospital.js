@@ -3,11 +3,27 @@ const Hospital = require('../models/hospital');
 
 const getHospitals = async(req, res = response ) => {
     try {
-        const hospitals = await Hospital.find().populate('user','name');
+        const from = Number(req.query.from);
+        let hospitals = [];
+        let totalHospitals = '';
+        if(!isNaN(from)){
+            [hospitals, totalHospitals] = await Promise.all([
+                Hospital.find().populate('user','name')
+                    .skip(from)
+                    .limit(5),
+                Hospital.count()
+            ])
+        } else {
+            [hospitals, totalHospitals] = await Promise.all([
+                Hospital.find().populate('user','name')
+            ])
+            Hospital.count()
+        }
         res.json({
             ok:true,
             msg:'ok',
-            hospitals:hospitals
+            hospitals:hospitals,
+            total: totalHospitals
         })
     } catch (error) {
         res.status(500).json({

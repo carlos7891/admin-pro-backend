@@ -12,7 +12,6 @@ const getUsers = async(req, res) => {
 
         User.count()
     ])
-
     res.json({
         ok:true,
         msg:'Users List',
