@@ -2,7 +2,8 @@ const { response, json } = require("express");
 const User = require('../models/user');
 const bcrypt = require('bcrypt');
 const { generateJWT } = require("../helpers/jwt");
-const { googleVerify } = require("../helpers/google-verify")
+const { googleVerify } = require("../helpers/google-verify");
+const { getMenu } = require("../helpers/menu-frontend");
 
 
 const login = async(req, res = response) =>{
@@ -36,6 +37,7 @@ const login = async(req, res = response) =>{
         res.json({
             ok:true,
             msg:'Logeado con exito',
+            menu: getMenu(userDb.role),
             token
         })
         
@@ -76,7 +78,8 @@ const googleSignIn = async(req, res = response) =>{
         res.status(200).json({
             ok:true,
             msg:'Logeado con exito',
-            email, name, picture, token
+            email, name, picture, token,
+            menu: getMenu(user.role)
         })
 
     } catch (error) {
@@ -98,7 +101,8 @@ const renewToken = async( req, res = response) => {
     res.json({
         ok:true,
         token,
-        user
+        user,
+        menu: getMenu(user.role)
     })
 }
 
